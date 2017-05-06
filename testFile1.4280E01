@@ -1,0 +1,5 @@
+program 
+  start
+    print << 1
+  stop
+

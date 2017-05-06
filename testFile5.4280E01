@@ -1,0 +1,9 @@
+program 
+  int x 
+  start
+    start
+      read >> x ; 
+    stop
+    print << x
+  stop
+

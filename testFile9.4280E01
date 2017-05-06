@@ -1,0 +1,11 @@
+program 
+  int x
+  start
+    read >> x ;
+    while ( x >> = 0 ) 
+    start
+      print << x
+      x = x - 1 ;
+    stop
+  stop
+

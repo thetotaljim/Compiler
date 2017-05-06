@@ -1,0 +1,13 @@
+program 
+  int x
+  start
+    read >> x ;
+    decision ( x >> = 13 ) 
+    start
+      decision ( x << = 19 ) 
+      start
+        print << x
+      stop 
+    stop
+  stop
+
