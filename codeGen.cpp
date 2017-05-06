@@ -22,19 +22,18 @@
 /************************************************************/
 //  Vector to hold the identifiers and check scope.
 vector<string> scopeStack;
-
 //  Used to track the scope of variables.
 int scope_index = 0;
+//	Used to track PUSHs
 int addedCount = 0;
-std::vector<std::string> temp; //temp vars
-int labelCt = 0; //counter for labels
+//	Vector to hold temporary variables.
+std::vector<std::string> temp;
+//	Number of Labels created.
+int labelCt = 0;
 //  Number of identifiers.
 int total_num_identifiers = 0;
-
+//	Target file for output in asm
 FILE *outFile;
-
-
-
 // Value-Defintions of the different String values
 enum StringValue {
     evNotDefined,
@@ -161,10 +160,10 @@ void popStack(int index) {
     //	Loop through and pop all elements in range off stack
     for(int i = (int)scopeStack.size(); i > index; i--){
         scopeStack.pop_back();
-				printf("popStack: addedCount before decrement = %d\n", addedCount);
+        printf("popStack: addedCount before decrement = %d\n", addedCount);
         fprintf(outFile, "%s", static_cast<string>("POP\n").c_str());
-				addedCount--;
-				printf("popStack: addedCount after decrement = %d\n", addedCount);
+        addedCount--;
+        printf("popStack: addedCount after decrement = %d\n", addedCount);
     }
 }
 
@@ -212,54 +211,35 @@ void codeGenInit(node_t* node){
 /************************************************************/
 
 void codeGen(node_t* node) {
-    
+
     if (node == NULL) {
         return;
     } else {
         string label = node->label;
-        
+
         switch(s_mapStringValues[label])
         {
-                //
-                //      Case:      Identifier.
-             /*   ///
-            case evStringValue1:
-            {
-                //	Identifiers are handled elsewhere.
-                break;
-            }
-                //
-                //      Case:        <program>
-                //*/
+                 //
+                 //      Case:        <program>
+                 //
             case evStringValue2:
             {   //  Check <var>
                 codeGen(node->child1);
                 //  Check <block>
                 codeGen(node->child2);
-								int tracker = 0;
-        				for (int cnt = 0; cnt < addedCount; cnt ++){
-									fprintf(outFile, "%s", static_cast<string>("POP\n").c_str());
-									tracker++;
-								}
-                /******************************************/
-                //  Added code for codeGen.
-                //
-                /******************************************/
+                int tracker = 0;
+                for (int cnt = 0; cnt < addedCount; cnt ++){
+                    fprintf(outFile, "%s", static_cast<string>("POP\n").c_str());
+                    tracker++;
+                }
                 fprintf(outFile, "%s", static_cast<string>("STOP\n").c_str());
-                //add non-temp vars to file
+                //  Print all variables after STOP statement in Target.
                 for (int i = 0; i < scopeStack.size(); i++) {
                     fprintf(outFile, "%s", static_cast<string>(scopeStack[i] + " 0\n").c_str());
                 }
-                //add temp vars to file
                 for (int i = 0; i < temp.size(); i++) {
                     fprintf(outFile, "%s", static_cast<string>(temp[i] + " 0\n").c_str());
                 }
-                /****************************************/
-                //
-                //  End added for codeGen.
-                /***************************************/
-                
-                
                 //  Pop everything off the stack
                 popStack(scope_index);
                 //  If we reach this line, semantics are good.
@@ -294,8 +274,7 @@ void codeGen(node_t* node) {
                     //  and if scope checks out, push to stack.
                     scopeStack.push_back(node->child1->myToken.instance);
                     fprintf(outFile, "%s", static_cast<string>("PUSH\n").c_str());
-										printf("case <var>: addedCount incremented to = %d\n", addedCount+1);
-										addedCount++;
+                    addedCount++;
                 }
                 if (node->child2 != NULL){
                     //  Then check the <mvars>
@@ -314,14 +293,13 @@ void codeGen(node_t* node) {
                     checkScope(node->child1->myToken);
                     //  and if the scope checks out, add the identifier to the stack
                     scopeStack.push_back(node->child1->myToken.instance.c_str());
-                    fprintf(outFile, "%s", static_cast<string>("PUSH\n").c_str());                    
-										addedCount++;
-										printf("case <var>: addedCount incremented to = %d\n", addedCount);
+                    fprintf(outFile, "%s", static_cast<string>("PUSH\n").c_str());
+                    addedCount++;
                 }
                 //  Check for any other <mvars>
                 codeGen(node->child2);
                 break;
-                
+
             }
                 //
                 //      Case:           <expr>
@@ -333,30 +311,19 @@ void codeGen(node_t* node) {
                 if (node->child3 != NULL && node->child2->label == "*") {
                     //  Check the <expr> first, eval the Right side first
                     codeGen(node->child3);
-                    
-                    /*****************************************/
-                    
                     string tempVar = newTemp();
                     fprintf(outFile, "STORE %s\n", tempVar.c_str());
-                    
-                    /*****************************************/
                     //  then the left side, check the <M> node
                     codeGen(node->child1);
-                    
-                    /*****************************************/
-                    
                     fprintf(outFile, "MULT %s\n", tempVar.c_str());
-                    
-                    /*****************************************/
-                    
                 }
                 else {
                     //  Otherwise, should be an empty <expr>
                     codeGen(node->child1);
                 }
-                
+
                 break;
-                
+
             }
                 //
                 //      Case:           <M> -> <T> / <M> | <T>
@@ -368,16 +335,16 @@ void codeGen(node_t* node) {
                     //  Check the righthand <M> node first
                     codeGen(node->child3);
                     string tempVar = newTemp();
-                    fprintf(outFile, "STORE %s\n", tempVar.c_str()); 
-										//  Then check the <T> node.
+                    fprintf(outFile, "STORE %s\n", tempVar.c_str());
+                    //  Then check the <T> node.
                     codeGen(node->child1);
-                     fprintf(outFile, "DIV %s\n", tempVar.c_str());
+                    fprintf(outFile, "DIV %s\n", tempVar.c_str());
                 } else{
                     //  Or check the <T> node
                     codeGen(node->child1);
                 }
                 break;
-                
+
             }
                 //
                 // 		Case		<T> ->   <F> + <T> | <F> - <T> | <F>
@@ -389,37 +356,23 @@ void codeGen(node_t* node) {
                 if (node->child2 != NULL && node->child2->label == "+") {
                     //  Check the <T> node first
                     codeGen(node->child3);
-                    /********************************/
-                    
                     string tempVar = newTemp();
                     fprintf(outFile, "STORE %s\n", tempVar.c_str());
-                    
-                    /*********************************/
                     //  Then check left side <F>
                     codeGen(node->child1);
-                    /*********************************/
-                    
                     fprintf(outFile, "ADD %s\n", tempVar.c_str());
-                    
-                    /*********************************/
+
                 }
                 //  Check case <F> - <T>
                 else if (node->child2 != NULL && node->child2->label == "-") {
                     //  Start by checking Right side <T> node.
                     codeGen(node->child3);
-                    /**********************************/
-                    
                     string tempVar = newTemp();
                     fprintf(outFile, "STORE %s\n", tempVar.c_str());
-                    /**********************************/
                     //  Check left side <F> node.
                     codeGen(node->child1);
-                    /************************************/
-                    
                     fprintf(outFile, "SUB %s\n", tempVar.c_str());
-                    
-                    /*************************************/
-                    
+
                 } else {
                     //  Check for <F>
                     codeGen(node->child1);
@@ -435,11 +388,7 @@ void codeGen(node_t* node) {
                 if (node->child1->label == "&") {
                     //  Then check <F>
                     codeGen(node->child2);
-                    /****************************/
-                    
                     fprintf(outFile, "MULT -1\n");
-                    
-                    /****************************/
                 } else
                     //  Or check <R>
                     codeGen(node->child1);
@@ -459,22 +408,18 @@ void codeGen(node_t* node) {
                         printf("Scoping Error: Line %d: token instance \"%s\" undefined.\n", node->child1->myToken.lineNum, node->child1->myToken.instance.c_str());
                         exit(0);
                     }
-                    /********************/
                     fprintf(outFile, "STACKR %d\n", scope_val);
-                    /**********************/
                 }
-                /********************************************/
-                else if (node->child1->label == "Number") { //if we have a number
+                else if (node->child1->label == "Number") {
                     fprintf(outFile, "LOAD %s\n", node->child1->myToken.instance.c_str());
-                    /************************************************/
                 }
                 else {
                     //  Otherwise check the sematics of the identifier.
                     codeGen(node->child1);
                 }
-                
+
                 break;
-                
+
             }
                 //
                 // 			Case 				<stats>
@@ -502,7 +447,7 @@ void codeGen(node_t* node) {
             case evStringValue13:
             {
                 if(node->child1 != NULL){
-                    //  For stat, just recursive call for possible child nodes.
+                //  For stat, just recursive call for possible child nodes.
                     codeGen(node->child1);
                 }
                 if(node->child2 != NULL){
@@ -518,7 +463,7 @@ void codeGen(node_t* node) {
                 //
             case evStringValue14:
             {
-                
+
                 //  Get the instance for the Identifer.
                 string varInstance = node->child2->myToken.instance;
                 //   Check if it has been declare in this scope.
@@ -527,24 +472,18 @@ void codeGen(node_t* node) {
                     printf("Scoping Error: Line %d: token instance \"%s\" undefined.\n", node->child2->myToken.lineNum, node->child2->myToken.instance.c_str());
                     exit(0);
                 }
-                
-                /**********************************************/
-                
-                string tempVar = newTemp(); //new temp variable
-                
+                string tempVar = newTemp();
                 //write to target
                 fprintf(outFile, "READ %s\n", tempVar.c_str());
                 fprintf(outFile, "LOAD %s\n", tempVar.c_str());
                 fprintf(outFile, "STACKW %d\n", scope_val);
-                
-                /**********************************************/
                 //   Check any possible child nodes
                 codeGen(node->child1);
                 codeGen(node->child2);
                 codeGen(node->child3);
                 codeGen(node->child4);
                 break;
-                
+
             }
                 //
                 // 		Case 				<out>
@@ -553,15 +492,10 @@ void codeGen(node_t* node) {
             {
                 //  Here we check the <expr> from the out statement
                 codeGen(node->child2);
-                
-                /*************************************************/
-                
-                string tempVar = newTemp(); //new temp variable
+                string tempVar = newTemp();
                 //write to target
                 fprintf(outFile, "STORE %s\n", tempVar.c_str());
                 fprintf(outFile, "WRITE %s\n", tempVar.c_str());
-                
-                /*************************************************/
                 break;
             }
                 //
@@ -572,26 +506,17 @@ void codeGen(node_t* node) {
                 //  child1 = expr
                 //  child2 = RO
                 //  child3 = expr
-                /*************************************************/
-                
-                string RO = node->child2->child1->label; //get the relational operator instance
-                /*********************************************/
+                //  Need RO for write to target
+                string RO = node->child2->child1->label;
                 // Start by checking the expression from the Right hand side.
                 codeGen(node->child3);
-                /*********************************************/
-                string tempVar = newTemp(); //new temp variable
-                
-                fprintf(outFile, "STORE %s\n", tempVar.c_str());
-                /*********************************************/
-                
+                string tempVar = newTemp();
+                fprintf(outFile, "STORE %s\n", tempVar.c_str());\
                 //  Now check the semantics of the left side expression
                 codeGen(node->child1);
-                
-                /*********************************************/
-                
-                fprintf(outFile, "SUB %s\n", tempVar.c_str()); //accumulator now holds the difference
-                
-                //determine which BR command to write to target
+                fprintf(outFile, "SUB %s\n", tempVar.c_str());
+                //  Result is now in ACC,
+                //  determine which BR command to write to target.
                 string Label = newLabel();
                 if (RO == ">>") {
                     fprintf(outFile, "BRZNEG %s\n", Label.c_str());
@@ -608,48 +533,31 @@ void codeGen(node_t* node) {
                 } else if (RO == "=!") {
                     fprintf(outFile, "BRZERO %s\n", Label.c_str());
                 }
-                
-                
-                /*********************************************/
-                
                 //  Now the block that follows.
                 codeGen(node->child4);
-                /******************************************/
-                
                 fprintf(outFile, "%s: NOOP\n", Label.c_str());
-                
-                /*******************************************/
                 break;
-                
+
             }
                 //
                 //			Case 				<loop>
                 //
             case evStringValue17:
             {
-                /***************************************/
-                
-                string RO = node->child2->child1->label; //get the relational operator instance
-                string tempVar = newTemp(); //new temp variable
-                string startLabel = newLabel(); //starting label for loop
-                string endLabel = newLabel(); //ending label for loop
-                fprintf(outFile, "%s: ", startLabel.c_str()); //set start label
-                /****************************************/
+                //  Set up for writing to target
+                string RO = node->child2->child1->label;
+                string tempVar = newTemp();
+                string startLabel = newLabel();
+                string endLabel = newLabel();
+                fprintf(outFile, "%s: ", startLabel.c_str());
                 //  Check the Right side val
                 codeGen(node->child3);
-                /*****************************************/
-                
                 fprintf(outFile, "STORE %s\n", tempVar.c_str());
-                
-                /*****************************************/
                 //  And then Left side val
                 codeGen(node->child1);
-                /*****************************************/
-                
                 fprintf(outFile, "SUB %s\n", tempVar.c_str());
-                //accumulator now holds the difference between the args
-                
-                //determine which BR command to write to target
+                // Result is in ACC
+                // Get BR case
                 if (RO == ">>") {
                     fprintf(outFile, "BRZNEG %s\n", endLabel.c_str());
                 } else if (RO == "<<") {
@@ -664,17 +572,10 @@ void codeGen(node_t* node) {
                 } else if (RO == "=!") {
                     fprintf(outFile, "BRZERO %s\n", endLabel.c_str());
                 }
-                
-                
-                /*****************************************/                codeGen(node->child4);
-                
-                /*****************************************/
-                
-                fprintf(outFile, "BR %s\n", startLabel.c_str()); //jump back to loop beginning
-                
-                fprintf(outFile, "%s: NOOP\n", endLabel.c_str()); //print the out label
-                
-                /*****************************************/
+
+                codeGen(node->child4);
+                fprintf(outFile, "BR %s\n", startLabel.c_str());
+                fprintf(outFile, "%s: NOOP\n", endLabel.c_str());
                 break;
             }
                 //
@@ -691,11 +592,7 @@ void codeGen(node_t* node) {
                     printf("Scoping Error: Line %d: token instance \"%s\" undefined.\n", node->child1->myToken.lineNum, node->child1->myToken.instance.c_str());
                     exit(0);
                 }
-                /**************************************/
-                
                 fprintf(outFile, "STACKW %d\n", scope_val);
-                
-                /**************************************/
                 break;
             }
                 //
@@ -718,6 +615,3 @@ void codeGen(node_t* node) {
         }
     }
 }
-
-
-
