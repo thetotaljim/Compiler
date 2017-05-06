@@ -25,6 +25,14 @@ vector<string> scopeStack;
 
 //  Used to track the scope of variables.
 int scope_index = 0;
+int addedCount = 0;
+std::vector<std::string> temp; //temp vars
+int labelCt = 0; //counter for labels
+//  Number of identifiers.
+int total_num_identifiers = 0;
+
+FILE *outFile;
+
 
 
 // Value-Defintions of the different String values
@@ -55,13 +63,6 @@ enum StringValue {
 /************************************************************/
 /*      STUFF ADDED FOR CODEGEN                             */
 /************************************************************/
-int addedCount = 0;
-std::vector<std::string> temp; //temp vars
-int labelCt = 0; //counter for labels
-//  Number of identifiers.
-int total_num_identifiers = 0;
-
-FILE *outFile;
 
 void initOutFile(FILE *of) {
     outFile = of;
