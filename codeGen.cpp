@@ -16,12 +16,11 @@
 #include <map>
 #include <string>
 
-
 /************************************************************/
 /*  Global variable declarations                            */
 /************************************************************/
 //  Vector to hold the identifiers and check scope.
-vector<string> scopeStack;
+std::vector<std::string> scopeStack;
 //  Used to track the scope of variables.
 int scope_index = 0;
 //	Used to track PUSHs
@@ -60,17 +59,16 @@ enum StringValue {
 };
 
 /************************************************************/
-/*      STUFF ADDED FOR CODEGEN                             */
+/*     Point to target file passed from main.               */
 /************************************************************/
-
 void initOutFile(FILE *of) {
     outFile = of;
 }
 
-/**
- * create a new temporary variable
- */
-string newTemp() {
+/************************************************************/
+/*      Add to temporary variable stack.                    */
+/************************************************************/
+std::string newTemp() {
     std::ostringstream ostringstream1;
     ostringstream1 << "T" << total_num_identifiers++;
     temp.push_back(ostringstream1.str());
@@ -80,7 +78,7 @@ string newTemp() {
 /**
  * create a new label
  */
-string newLabel() {
+std::string newLabel() {
     std::ostringstream ostringstream1;
     ostringstream1 << "L" << labelCt++;
     return ostringstream1.str();
@@ -91,7 +89,7 @@ string newLabel() {
  */
 void printScope() {
     for (int i = (int)scopeStack.size() - 1; i >= 0; i--) {
-        cout << scopeStack[i] << endl;
+        std::cout << scopeStack[i] << std::endl;
     }
 }
 
@@ -103,8 +101,10 @@ void printScope() {
 static std::map<std::string, StringValue> s_mapStringValues;
 
 /************************************************************/
-/*  Initialize() maps the node labels to enums to use in    */
-/* the* switch statement in semantic check.                 */
+/*      Initialize() function                               */
+/*                                                          */
+/*      Maps the node labels to enums to use in             */
+/*      the switch statement in semantic check.             */
 /************************************************************/
 
 void Initialize()
@@ -161,7 +161,7 @@ void popStack(int index) {
     for(int i = (int)scopeStack.size(); i > index; i--){
         scopeStack.pop_back();
         printf("popStack: addedCount before decrement = %d\n", addedCount);
-        fprintf(outFile, "%s", static_cast<string>("POP\n").c_str());
+        fprintf(outFile, "%s", static_cast<std::string>("POP\n").c_str());
         addedCount--;
         printf("popStack: addedCount after decrement = %d\n", addedCount);
     }
@@ -175,7 +175,7 @@ void popStack(int index) {
 /*      If not, -1 is returned.                             */
 /************************************************************/
 
-int find(string ident) {
+int find(std::string ident) {
     //	Loop through the scoped indentifiers
     for (int i = (int)scopeStack.size() - 1; i > -1; i--) {
         //	If a match is found
@@ -211,12 +211,12 @@ void codeGenInit(node_t* node){
 /************************************************************/
 
 void codeGen(node_t* node) {
-
+    
     if (node == NULL) {
         return;
     } else {
-        string label = node->label;
-
+        std::string label = node->label;
+        
         switch(s_mapStringValues[label])
         {
                  //
@@ -229,16 +229,16 @@ void codeGen(node_t* node) {
                 codeGen(node->child2);
                 int tracker = 0;
                 for (int cnt = 0; cnt < addedCount; cnt ++){
-                    fprintf(outFile, "%s", static_cast<string>("POP\n").c_str());
+                    fprintf(outFile, "%s", static_cast<std::string>("POP\n").c_str());
                     tracker++;
                 }
-                fprintf(outFile, "%s", static_cast<string>("STOP\n").c_str());
+                fprintf(outFile, "%s", static_cast<std::string>("STOP\n").c_str());
                 //  Print all variables after STOP statement in Target.
                 for (int i = 0; i < scopeStack.size(); i++) {
-                    fprintf(outFile, "%s", static_cast<string>(scopeStack[i] + " 0\n").c_str());
+                    fprintf(outFile, "%s", static_cast<std::string>(scopeStack[i] + " 0\n").c_str());
                 }
                 for (int i = 0; i < temp.size(); i++) {
-                    fprintf(outFile, "%s", static_cast<string>(temp[i] + " 0\n").c_str());
+                    fprintf(outFile, "%s", static_cast<std::string>(temp[i] + " 0\n").c_str());
                 }
                 //  Pop everything off the stack
                 popStack(scope_index);
@@ -273,7 +273,7 @@ void codeGen(node_t* node) {
                     checkScope(node->child1->myToken);
                     //  and if scope checks out, push to stack.
                     scopeStack.push_back(node->child1->myToken.instance);
-                    fprintf(outFile, "%s", static_cast<string>("PUSH\n").c_str());
+                    fprintf(outFile, "%s", static_cast<std::string>("PUSH\n").c_str());
                     addedCount++;
                 }
                 if (node->child2 != NULL){
@@ -293,13 +293,13 @@ void codeGen(node_t* node) {
                     checkScope(node->child1->myToken);
                     //  and if the scope checks out, add the identifier to the stack
                     scopeStack.push_back(node->child1->myToken.instance.c_str());
-                    fprintf(outFile, "%s", static_cast<string>("PUSH\n").c_str());
+                    fprintf(outFile, "%s", static_cast<std::string>("PUSH\n").c_str());
                     addedCount++;
                 }
                 //  Check for any other <mvars>
                 codeGen(node->child2);
                 break;
-
+                
             }
                 //
                 //      Case:           <expr>
@@ -311,7 +311,7 @@ void codeGen(node_t* node) {
                 if (node->child3 != NULL && node->child2->label == "*") {
                     //  Check the <expr> first, eval the Right side first
                     codeGen(node->child3);
-                    string tempVar = newTemp();
+                    std::string tempVar = newTemp();
                     fprintf(outFile, "STORE %s\n", tempVar.c_str());
                     //  then the left side, check the <M> node
                     codeGen(node->child1);
@@ -321,9 +321,9 @@ void codeGen(node_t* node) {
                     //  Otherwise, should be an empty <expr>
                     codeGen(node->child1);
                 }
-
+                
                 break;
-
+                
             }
                 //
                 //      Case:           <M> -> <T> / <M> | <T>
@@ -334,7 +334,7 @@ void codeGen(node_t* node) {
                 if (node->child2 != NULL && node->child2->label == "/") {
                     //  Check the righthand <M> node first
                     codeGen(node->child3);
-                    string tempVar = newTemp();
+                    std::string tempVar = newTemp();
                     fprintf(outFile, "STORE %s\n", tempVar.c_str());
                     //  Then check the <T> node.
                     codeGen(node->child1);
@@ -344,7 +344,7 @@ void codeGen(node_t* node) {
                     codeGen(node->child1);
                 }
                 break;
-
+                
             }
                 //
                 // 		Case		<T> ->   <F> + <T> | <F> - <T> | <F>
@@ -356,23 +356,23 @@ void codeGen(node_t* node) {
                 if (node->child2 != NULL && node->child2->label == "+") {
                     //  Check the <T> node first
                     codeGen(node->child3);
-                    string tempVar = newTemp();
+                    std::string tempVar = newTemp();
                     fprintf(outFile, "STORE %s\n", tempVar.c_str());
                     //  Then check left side <F>
                     codeGen(node->child1);
                     fprintf(outFile, "ADD %s\n", tempVar.c_str());
-
+                
                 }
                 //  Check case <F> - <T>
                 else if (node->child2 != NULL && node->child2->label == "-") {
                     //  Start by checking Right side <T> node.
                     codeGen(node->child3);
-                    string tempVar = newTemp();
+                    std::string tempVar = newTemp();
                     fprintf(outFile, "STORE %s\n", tempVar.c_str());
                     //  Check left side <F> node.
                     codeGen(node->child1);
                     fprintf(outFile, "SUB %s\n", tempVar.c_str());
-
+                    
                 } else {
                     //  Check for <F>
                     codeGen(node->child1);
@@ -417,9 +417,9 @@ void codeGen(node_t* node) {
                     //  Otherwise check the sematics of the identifier.
                     codeGen(node->child1);
                 }
-
+                
                 break;
-
+                
             }
                 //
                 // 			Case 				<stats>
@@ -463,16 +463,16 @@ void codeGen(node_t* node) {
                 //
             case evStringValue14:
             {
-
+                
                 //  Get the instance for the Identifer.
-                string varInstance = node->child2->myToken.instance;
+                std::string varInstance = node->child2->myToken.instance;
                 //   Check if it has been declare in this scope.
                 int scope_val = find(varInstance);
                 if (scope_val == -1) {
                     printf("Scoping Error: Line %d: token instance \"%s\" undefined.\n", node->child2->myToken.lineNum, node->child2->myToken.instance.c_str());
                     exit(0);
                 }
-                string tempVar = newTemp();
+                std::string tempVar = newTemp();
                 //write to target
                 fprintf(outFile, "READ %s\n", tempVar.c_str());
                 fprintf(outFile, "LOAD %s\n", tempVar.c_str());
@@ -483,7 +483,7 @@ void codeGen(node_t* node) {
                 codeGen(node->child3);
                 codeGen(node->child4);
                 break;
-
+                
             }
                 //
                 // 		Case 				<out>
@@ -492,7 +492,7 @@ void codeGen(node_t* node) {
             {
                 //  Here we check the <expr> from the out statement
                 codeGen(node->child2);
-                string tempVar = newTemp();
+                std::string tempVar = newTemp();
                 //write to target
                 fprintf(outFile, "STORE %s\n", tempVar.c_str());
                 fprintf(outFile, "WRITE %s\n", tempVar.c_str());
@@ -507,17 +507,17 @@ void codeGen(node_t* node) {
                 //  child2 = RO
                 //  child3 = expr
                 //  Need RO for write to target
-                string RO = node->child2->child1->label;
+                std::string RO = node->child2->child1->label;
                 // Start by checking the expression from the Right hand side.
                 codeGen(node->child3);
-                string tempVar = newTemp();
+                std::string tempVar = newTemp();
                 fprintf(outFile, "STORE %s\n", tempVar.c_str());\
                 //  Now check the semantics of the left side expression
                 codeGen(node->child1);
                 fprintf(outFile, "SUB %s\n", tempVar.c_str());
                 //  Result is now in ACC,
                 //  determine which BR command to write to target.
-                string Label = newLabel();
+                std::string Label = newLabel();
                 if (RO == ">>") {
                     fprintf(outFile, "BRZNEG %s\n", Label.c_str());
                 } else if (RO == "<<") {
@@ -537,7 +537,7 @@ void codeGen(node_t* node) {
                 codeGen(node->child4);
                 fprintf(outFile, "%s: NOOP\n", Label.c_str());
                 break;
-
+                
             }
                 //
                 //			Case 				<loop>
@@ -545,10 +545,10 @@ void codeGen(node_t* node) {
             case evStringValue17:
             {
                 //  Set up for writing to target
-                string RO = node->child2->child1->label;
-                string tempVar = newTemp();
-                string startLabel = newLabel();
-                string endLabel = newLabel();
+                std::string RO = node->child2->child1->label;
+                std::string tempVar = newTemp();
+                std::string startLabel = newLabel();
+                std::string endLabel = newLabel();
                 fprintf(outFile, "%s: ", startLabel.c_str());
                 //  Check the Right side val
                 codeGen(node->child3);
@@ -572,7 +572,7 @@ void codeGen(node_t* node) {
                 } else if (RO == "=!") {
                     fprintf(outFile, "BRZERO %s\n", endLabel.c_str());
                 }
-
+    
                 codeGen(node->child4);
                 fprintf(outFile, "BR %s\n", startLabel.c_str());
                 fprintf(outFile, "%s: NOOP\n", endLabel.c_str());
@@ -615,3 +615,7 @@ void codeGen(node_t* node) {
         }
     }
 }
+
+
+
+
