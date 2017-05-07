@@ -11,9 +11,10 @@
 
 #include "node.h"
 
-void initOutFile(FILE* of);
+void setTargetFile(FILE* of);
 void codeGenInit(node_t* node);
 void codeGen(node_t*);
 
 #endif /* codeGen_h */
+
 

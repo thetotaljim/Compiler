@@ -1,8 +1,8 @@
 //
 //  main.cpp
-//  P4_X2
+//  Xcode_P4
 //
-//  Created by James Steimel on 5/3/17.
+//  Created by James Steimel on 5/6/17.
 //  Copyright © 2017 James Steimel. All rights reserved.
 //
 
@@ -36,12 +36,12 @@ int main(int argc, const char * argv[]) {
     printf("cs4280 Project 3 by James Steimel 4/15/17\n");
     printf("*******************************************\n");
     std::string input_file_name;
-		std::string inFile;
+    std::string inFile;
     // Here we check to see if a filename was passed.
     if (argc == 2) {
         //  Get the filename from the command line.
         input_file_name = argv[1];
-				inFile = argv[1];
+        inFile = argv[1];
         //  Check for an extension.
         if (hasExtension(input_file_name) == false)
         {
@@ -92,8 +92,8 @@ int main(int argc, const char * argv[]) {
     //  the tree's recursive output call.
     int level = 0;
     printTree(myTree, level);
-		
-		string targName;
+    
+    string targName;
     //create out file and give it to the code generator
     if (input_file_name.compare("temp.4280E01") == 0) {
         targName = "keyboard.asm";
@@ -102,9 +102,9 @@ int main(int argc, const char * argv[]) {
         //targName = strcat(argv[1], extension.c_str());
         targName = inFile.append(".asm");
     }
-
-		FILE *outFile = fopen(targName.c_str(), "w");
-		initOutFile(outFile);
+    
+    FILE *outFile = fopen(targName.c_str(), "w");
+    setTargetFile(outFile);
     codeGenInit(myTree);
     //	If we are back in main, the tree output was successful.
     //	Let the user know the program is terminating successfully.
@@ -176,5 +176,6 @@ void usageMessage(){
     std::cout << "P2                    : will allow keyboard input from user.\n";
     
 }
+
 
 

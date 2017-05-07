@@ -58,11 +58,11 @@ enum StringValue {
     evEnd
 };
 /************************************************************/
-/*      initOutFile() function                              */
+/*      setTargetFile() function                            */
 /*                                                          */
 /*      Point to target file determined in main.            */
 /************************************************************/
-void initOutFile(FILE *of) {
+void setTargetFile(FILE *of) {
     outFile = of;
 }
 /************************************************************/
