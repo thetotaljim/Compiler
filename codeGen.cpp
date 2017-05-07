@@ -57,6 +57,7 @@ enum StringValue {
     evStringValue19,
     evEnd
 };
+
 /************************************************************/
 /*      setTargetFile() function                            */
 /*                                                          */
@@ -65,16 +66,17 @@ enum StringValue {
 void setTargetFile(FILE *of) {
     outFile = of;
 }
+
 /************************************************************/
 /*      newTemp() function                                  */
 /*                                                          */
 /*      Generate a temp label to be used in the target file.*/
 /************************************************************/
 std::string newTemp() {
-    std::ostringstream ostringstream1;
-    ostringstream1 << "T" << total_num_identifiers++;
-    temp.push_back(ostringstream1.str());
-    return ostringstream1.str();
+    std::ostringstream temp_val;
+    temp_val << "T" << total_num_identifiers++;
+    temp.push_back(temp_val.str());
+    return temp_val.str();
 }
 
 /************************************************************/
@@ -83,9 +85,9 @@ std::string newTemp() {
 /*      Generate a label to be used in the target file.     */
 /************************************************************/
 std::string newLabel() {
-    std::ostringstream ostringstream1;
-    ostringstream1 << "L" << labelCt++;
-    return ostringstream1.str();
+    std::ostringstream label_str;
+    label_str << "L" << labelCt++;
+    return label_str.str();
 }
 
 /************************************************************/
@@ -227,10 +229,9 @@ void codeGen(node_t* node) {
                 codeGen(node->child1);
                 //  Check <block>
                 codeGen(node->child2);
-                int tracker = 0;
+                
                 for (int cnt = 0; cnt < number_pops; cnt ++){
                     fprintf(outFile, "%s", static_cast<std::string>("POP\n").c_str());
-                    tracker++;
                 }
                 fprintf(outFile, "%s", static_cast<std::string>("STOP\n").c_str());
                 //  Print all variables after STOP statement in Target.
