@@ -12,7 +12,7 @@
 #include "node.h"
 
 void setTargetFile(FILE* of);
-void codeGenInit(node_t* node);
+void generateTargetFile(node_t* node);
 void codeGen(node_t*);
 
 #endif /* codeGen_h */

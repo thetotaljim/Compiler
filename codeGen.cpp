@@ -189,14 +189,14 @@ int find(std::string ident) {
 }
 
 /************************************************************/
-/*      codeGenInit() function                             */
+/*      generateTargetFile() function                       */
 /*                                                          */
 /*      Before checking semantics, the different node       */
 /*      types need to be turned into enums for the          */
 /*      switch statment by calling the Initialze() function.*/
 /************************************************************/
 
-void codeGenInit(node_t* node){
+void generateTargetFile(node_t* node){
     Initialize();
     codeGen(node);
 }

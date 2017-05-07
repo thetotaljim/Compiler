@@ -96,7 +96,7 @@ int main(int argc, const char * argv[]) {
     string targName;
     //create out file and give it to the code generator
     if (input_file_name.compare("temp.4280E01") == 0) {
-        targName = "keyboard.asm";
+        targName = "out.asm";
     } else {
         //string extension = ".asm";
         //targName = strcat(argv[1], extension.c_str());
@@ -105,7 +105,7 @@ int main(int argc, const char * argv[]) {
     
     FILE *outFile = fopen(targName.c_str(), "w");
     setTargetFile(outFile);
-    codeGenInit(myTree);
+    generateTargetFile(myTree);
     //	If we are back in main, the tree output was successful.
     //	Let the user know the program is terminating successfully.
     printf("\nParse tree output generated, program terminating successfully.\n");
