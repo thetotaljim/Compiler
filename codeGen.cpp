@@ -24,7 +24,7 @@ std::vector<std::string> scopeStack;
 //  Used to track the scope of variables.
 int scope_index = 0;
 //	Used to track PUSHs
-int addedCount = 0;
+int number_pops = 0;
 //	Vector to hold temporary variables.
 std::vector<std::string> temp;
 //	Number of Labels created.
@@ -57,16 +57,18 @@ enum StringValue {
     evStringValue19,
     evEnd
 };
-
 /************************************************************/
-/*     Point to target file passed from main.               */
+/*      initOutFile() function                              */
+/*                                                          */
+/*      Point to target file determined in main.            */
 /************************************************************/
 void initOutFile(FILE *of) {
     outFile = of;
 }
-
 /************************************************************/
-/*      Add to temporary variable stack.                    */
+/*      newTemp() function                                  */
+/*                                                          */
+/*      Generate a temp label to be used in the target file.*/
 /************************************************************/
 std::string newTemp() {
     std::ostringstream ostringstream1;
@@ -75,27 +77,27 @@ std::string newTemp() {
     return ostringstream1.str();
 }
 
-/**
- * create a new label
- */
+/************************************************************/
+/*      newLabel() function                                 */
+/*                                                          */
+/*      Generate a label to be used in the target file.     */
+/************************************************************/
 std::string newLabel() {
     std::ostringstream ostringstream1;
     ostringstream1 << "L" << labelCt++;
     return ostringstream1.str();
 }
 
-/**
- * print the scope
- */
+/************************************************************/
+/*      printScope() function                               */
+/*                                                          */
+/*      Output stack variablet to target file.              */
+/************************************************************/
 void printScope() {
     for (int i = (int)scopeStack.size() - 1; i >= 0; i--) {
         std::cout << scopeStack[i] << std::endl;
     }
 }
-
-/************************************************************/
-/*      END OF ADDED FOR CODE GEN                           */
-/************************************************************/
 
 // Map to associate the strings with the enum values
 static std::map<std::string, StringValue> s_mapStringValues;
@@ -153,17 +155,15 @@ void checkScope(token tk){
 /*                                                          */
 /*      PopStack function will take a stack index, and      */
 /*      pop all the identifiers following the index         */
-/*      (inclusive) off the stack.                          */
+/*      off the stack.                                      */
 /************************************************************/
 
 void popStack(int index) {
     //	Loop through and pop all elements in range off stack
     for(int i = (int)scopeStack.size(); i > index; i--){
         scopeStack.pop_back();
-        printf("popStack: addedCount before decrement = %d\n", addedCount);
         fprintf(outFile, "%s", static_cast<std::string>("POP\n").c_str());
-        addedCount--;
-        printf("popStack: addedCount after decrement = %d\n", addedCount);
+        number_pops--;
     }
 }
 
@@ -202,7 +202,7 @@ void codeGenInit(node_t* node){
 }
 
 /************************************************************/
-/*      codeGen(node)  function                            */
+/*      codeGen(node)  function                             */
 /*                                                          */
 /*      This function will take the parse tree, and         */
 /*      check the scope of any identifiers. If the          */
@@ -228,7 +228,7 @@ void codeGen(node_t* node) {
                 //  Check <block>
                 codeGen(node->child2);
                 int tracker = 0;
-                for (int cnt = 0; cnt < addedCount; cnt ++){
+                for (int cnt = 0; cnt < number_pops; cnt ++){
                     fprintf(outFile, "%s", static_cast<std::string>("POP\n").c_str());
                     tracker++;
                 }
@@ -274,7 +274,7 @@ void codeGen(node_t* node) {
                     //  and if scope checks out, push to stack.
                     scopeStack.push_back(node->child1->myToken.instance);
                     fprintf(outFile, "%s", static_cast<std::string>("PUSH\n").c_str());
-                    addedCount++;
+                    number_pops++;
                 }
                 if (node->child2 != NULL){
                     //  Then check the <mvars>
@@ -294,7 +294,7 @@ void codeGen(node_t* node) {
                     //  and if the scope checks out, add the identifier to the stack
                     scopeStack.push_back(node->child1->myToken.instance.c_str());
                     fprintf(outFile, "%s", static_cast<std::string>("PUSH\n").c_str());
-                    addedCount++;
+                    number_pops++;
                 }
                 //  Check for any other <mvars>
                 codeGen(node->child2);
