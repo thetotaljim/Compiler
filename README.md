@@ -1,4 +1,4 @@
-![Picture](https://github.com/thetotaljim/Compiler/blob/master/Assets/compilerLogo.png)
+#Compiler
 
 [![Awesome Badges](https://img.shields.io/badge/badges-awesome-green.svg)](https://github.com/Naereen/badges)
 
