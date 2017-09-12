@@ -16,5 +16,7 @@ C/C++ compiler.
 
 To use this compiler, download the repository, and move all the test files into the same directory as the .cpp and .h files, as well as the script and Virtual Machine.  The included makefile can be used as such:
 
-> `make comp`
+```sh
+make comp
+```
 
