@@ -69,7 +69,7 @@ Here is a list of the included files and their usage in this project:
  
 ## Meta
 
-Jim Steimel [@thetotaljim](https://twitter.com/thetotaljim) - jim@thetotaljim.com - https://thetotaljim.com
+Jim Steimel [@thetotaljim](https://twitter.com/thetotaljim) - jim@thetotaljim.com - www.thetotaljim.com
 
 
 
