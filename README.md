@@ -17,6 +17,15 @@ C/C++ compiler.
 To use this compiler, download the repository, and move all the test files into the same directory as the .cpp and .h files, as well as the script and Virtual Machine.  The included makefile can be used as such:
 
 ```sh
-make comp
+~$ make comp
 ```
+Also included is a bash script for testing different source code files. It can be used as such:
+
+```sh
+~$ ./runScript.sh
+```
+This will run the 12 included source code files through the compiler, and then use the resulting .asm files with the included VirtualMachine.  The resulting text will let you know if your .asm code was successful or not. Here is what it looks like:
+
+![Picture](https://github.com/thetotaljim/Compiler/blob/master/Assets/runScriptExample.png)
+
 
