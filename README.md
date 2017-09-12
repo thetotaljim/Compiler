@@ -1,8 +1,8 @@
 # Compiler
 
+[![forthebadge](http://forthebadge.com/images/badges/built-with-love.svg)](http://forthebadge.com)
 [![Awesome Badges](https://img.shields.io/badge/badges-awesome-green.svg)](https://github.com/Naereen/badges)
 [![HitCount](http://hits.dwyl.io/thetotaljim/Compiler.svg)](http://hits.dwyl.io/thetotaljim/Compiler)
-[![forthebadge](http://forthebadge.com/images/badges/built-with-love.svg)](http://forthebadge.com)
 
 > This is a compiler developed for CS4280 Program Translation at UMSL.
 
